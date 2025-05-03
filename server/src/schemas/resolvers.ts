@@ -1,5 +1,6 @@
-import { User } from '../models/index.js';
-import { signToken, AuthenticationError } from '../services/auth.js';
+import User from '../models/index.js';
+import { signToken } from '../services/auth.js';
+import { AuthenticationError } from 'apollo-server-express';
 
 interface UserArgs {
     username: string;
