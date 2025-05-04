@@ -1,3 +1,5 @@
+// server/services/auth.ts
+
 import { GraphQLError } from 'graphql';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -10,7 +12,6 @@ interface JwtPayload {
   email: string;
 }
 
-// This function will be used inside the Apollo Server context
 export const getUserFromToken = (authHeader?: string) => {
   if (!authHeader) return null;
 

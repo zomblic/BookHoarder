@@ -13,10 +13,13 @@ import { getUserFromToken } from './services/auth.js'; // make sure path matches
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
+
 
 async function startApolloServer() {
   await server.start();

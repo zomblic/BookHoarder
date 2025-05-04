@@ -1,6 +1,7 @@
-import User from '../models/index.js';
 import { signToken } from '../services/auth.js';
+import { GraphQLError } from 'graphql';
 import { AuthenticationError } from 'apollo-server-express';
+import { User } from '../models/index.js';
 
 interface UserArgs {
     username: string;
@@ -36,15 +37,13 @@ interface DeleteBookArgs {
 
 const resolvers = {
     Query: {
-        user: async (_parent: any, { username }: UserArgs) => {
-            return User.findOne({ username });
-        }, 
-        me: async (_parent: any, _args: unknown, context: any) => {
-            if (context.user) {
-              return User.findOne({ _id: context.user._id });
-            }
-            throw new AuthenticationError('Could not authenticate user.');
-        },       
+        me: async (_parent: unknown, _args: unknown, context: { user?: any }) => {
+
+        if (!context.user) {
+          throw new GraphQLError('You need to be logged in.');
+        }
+        return await User.findById(context.user._id);
+      },
     },
 
     Mutation: {
