@@ -3,9 +3,6 @@ import { GraphQLError } from 'graphql';
 import { AuthenticationError } from 'apollo-server-express';
 import { User } from '../models/index.js';
 
-interface UserArgs {
-    username: string;
-  }
 
 interface CreateUserArgs {
     input:{

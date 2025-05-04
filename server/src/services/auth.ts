@@ -3,6 +3,7 @@
 import { GraphQLError } from 'graphql';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { Request, Response } from 'express';
 
 dotenv.config();
 
@@ -33,3 +34,22 @@ export const signToken = (username: string, email: string, _id: unknown) => {
   const secretKey = process.env.JWT_SECRET_KEY || '';
   return jwt.sign(payload, secretKey, { expiresIn: '1h' });
 };
+
+
+// Add this to auth.js:
+export const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  const secretKey = process.env.JWT_SECRET_KEY || '';
+
+  if (!token) return res.sendStatus(401);
+
+  try {
+    const decoded = jwt.verify(token, secretKey);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid or expired token' });
+  }
+};
+
