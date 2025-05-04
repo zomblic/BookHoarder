@@ -24,11 +24,11 @@ const SearchBooks = () => {
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
 
-  // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
-  // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
+  // set up useEffect hook to save `savedBookIds` list to localStorage whenever it changes
+  // this replaces the original cleanup-only behavior
   useEffect(() => {
-    return () => saveBookIds(savedBookIds);
-  });
+    saveBookIds(savedBookIds);
+  }, [savedBookIds]);
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -47,6 +47,7 @@ const SearchBooks = () => {
 
       const { items } = await response.json();
 
+      // map Google API book data to our app's book format
       const bookData = items.map((book: GoogleAPIBook) => ({
         bookId: book.id,
         authors: book.volumeInfo.authors || ['No author to display'],
@@ -123,6 +124,8 @@ const SearchBooks = () => {
         </h2>
         <Row>
           {searchedBooks.map((book) => {
+            const isSaved = savedBookIds.includes(book.bookId);
+
             return (
               <Col md="4" key={book.bookId}>
                 <Card border='dark'>
@@ -131,14 +134,16 @@ const SearchBooks = () => {
                   ) : null}
                   <Card.Body>
                     <Card.Title>{book.title}</Card.Title>
-                    <p className='small'>Authors: {book.authors}</p>
+                    {/* display authors array properly */}
+                    <p className='small'>Authors: {book.authors.join(', ')}</p>
                     <Card.Text>{book.description}</Card.Text>
                     {Auth.loggedIn() && (
                       <Button
-                        disabled={savedBookIds?.some((savedBookId: string) => savedBookId === book.bookId)}
+                        disabled={isSaved}
                         className='btn-block btn-info'
-                        onClick={() => handleSaveBook(book.bookId)}>
-                        {savedBookIds?.some((savedBookId: string) => savedBookId === book.bookId)
+                        onClick={() => handleSaveBook(book.bookId)}
+                      >
+                        {isSaved
                           ? 'This book has already been saved!'
                           : 'Save this Book!'}
                       </Button>
