@@ -3,7 +3,6 @@
 import { GraphQLError } from 'graphql';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { Request, Response } from 'express';
 
 dotenv.config();
 
@@ -37,19 +36,32 @@ export const signToken = (username: string, email: string, _id: unknown) => {
 
 
 // Add this to auth.js:
-export const authenticateToken = (req, res, next) => {
+import { Request, Response, NextFunction } from 'express';
+
+export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
   const secretKey = process.env.JWT_SECRET_KEY || '';
 
-  if (!token) return res.sendStatus(401);
+  if (!token) {
+    res.sendStatus(401);
+    return;
+  }
 
   try {
     const decoded = jwt.verify(token, secretKey);
-    req.user = decoded;
+    if (typeof decoded === 'object' && decoded !== null && '_id' in decoded && 'username' in decoded) {
+      req.user = decoded as { _id: unknown; username: string };
+    } else {
+      res.status(403).json({ message: 'Invalid or expired token' });
+      return;
+    }
+    
     next();
+    return;
   } catch (err) {
-    return res.status(403).json({ message: 'Invalid or expired token' });
+    res.status(403).json({ message: 'Invalid or expired token' });
+    return;
   }
 };
 
